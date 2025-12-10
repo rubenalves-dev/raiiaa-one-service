@@ -8,8 +8,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5"
-	repo "github.com/rubenalves-dev/raiiaa-one-service/internal/adapters/mysql/sqlc"
-	"github.com/rubenalves-dev/raiiaa-one-service/internal/ignore/products"
+	repo "github.com/rubenalves-dev/raiiaa-one-service/internal/adapters/postgres/sqlc"
+	"github.com/rubenalves-dev/raiiaa-one-service/internal/resources/users"
 )
 
 type application struct {
@@ -39,10 +39,14 @@ func (app *application) mount() http.Handler {
 		w.Write([]byte("The server is healthy"))
 	})
 
-	productsService := products.NewService(repo.New(app.db))
-	productsHandlers := products.NewHandler(productsService)
-	r.Get("/products", productsHandlers.ListProducts)
-	r.Get("/products/{id}", productsHandlers.FindProductByID)
+	// productsService := products.NewService(repo.New(app.db))
+	// productsHandlers := products.NewHandler(productsService)
+	// r.Get("/products", productsHandlers.ListProducts)
+	// r.Get("/products/{id}", productsHandlers.FindProductByID)
+
+	usersService := users.NewService(repo.New(app.db))
+	usersHandlers := users.NewHandler(usersService)
+	r.Post("/users", usersHandlers.CreateUser)
 
 	return r
 }

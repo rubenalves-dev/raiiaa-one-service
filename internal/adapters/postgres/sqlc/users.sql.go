@@ -13,27 +13,19 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (email, password_hash, full_name, default_hourly_rate, currency)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO users (email, password_hash, full_name)
+VALUES ($1, $2, $3)
 RETURNING id, email, password_hash, full_name, default_hourly_rate, currency, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	Email             string      `json:"email"`
-	PasswordHash      string      `json:"password_hash"`
-	FullName          pgtype.Text `json:"full_name"`
-	DefaultHourlyRate pgtype.Int4 `json:"default_hourly_rate"`
-	Currency          pgtype.Text `json:"currency"`
+	Email        string      `json:"email"`
+	PasswordHash string      `json:"password_hash"`
+	FullName     pgtype.Text `json:"full_name"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser,
-		arg.Email,
-		arg.PasswordHash,
-		arg.FullName,
-		arg.DefaultHourlyRate,
-		arg.Currency,
-	)
+	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.PasswordHash, arg.FullName)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -49,11 +41,11 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password_hash, full_name, default_hourly_rate, currency, created_at, updated_at FROM users WHERE email = $1 LIMIT $1
+SELECT id, email, password_hash, full_name, default_hourly_rate, currency, created_at, updated_at FROM users WHERE email = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, limit int32) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByEmail, limit)
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
 	var i User
 	err := row.Scan(
 		&i.ID,

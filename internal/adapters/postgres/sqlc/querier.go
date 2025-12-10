@@ -17,7 +17,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	GetClient(ctx context.Context, arg GetClientParams) (Client, error)
 	GetUnbillableTimeEntries(ctx context.Context, userID uuid.UUID) ([]GetUnbillableTimeEntriesRow, error)
-	GetUserByEmail(ctx context.Context, limit int32) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	ListClientByUserID(ctx context.Context, userID uuid.UUID) ([]Client, error)
 	ListProjectsByClientID(ctx context.Context, arg ListProjectsByClientIDParams) ([]Project, error)
