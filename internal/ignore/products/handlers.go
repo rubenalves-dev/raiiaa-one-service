@@ -3,6 +3,7 @@ package products
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/rubenalves-dev/raiiaa-one-service/internal/json"
 )
@@ -18,15 +19,29 @@ func NewHandler(service Service) *handler {
 }
 
 func (h *handler) ListProducts(w http.ResponseWriter, r *http.Request) {
-	err := h.service.ListProducts(r.Context())
+	products, err := h.service.ListProducts(r.Context())
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// 2. Return JSON in an HTTP Request
-
-	products := []string{"Product 1", "Product 2", "Product 3"}
 
 	json.Write(w, http.StatusOK, products)
+}
+
+func (h *handler) FindProductByID(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	product, err := h.service.FindProductByID(r.Context(), id)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	json.Write(w, http.StatusOK, product)
 }

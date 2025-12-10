@@ -1,3 +1,7 @@
+-- ======================
+-- Tests
+-- ======================
+
 -- name: ListProducts :many
 SELECT * FROM products;
 

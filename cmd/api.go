@@ -7,12 +7,14 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5"
+	repo "github.com/rubenalves-dev/raiiaa-one-service/internal/adapters/mysql/sqlc"
 	"github.com/rubenalves-dev/raiiaa-one-service/internal/ignore/products"
 )
 
 type application struct {
 	config config
-	// db driver
+	db     *pgx.Conn
 }
 
 type config struct {
@@ -37,9 +39,10 @@ func (app *application) mount() http.Handler {
 		w.Write([]byte("The server is healthy"))
 	})
 
-	productsService := products.NewService()
+	productsService := products.NewService(repo.New(app.db))
 	productsHandlers := products.NewHandler(productsService)
 	r.Get("/products", productsHandlers.ListProducts)
+	r.Get("/products/{id}", productsHandlers.FindProductByID)
 
 	return r
 }
