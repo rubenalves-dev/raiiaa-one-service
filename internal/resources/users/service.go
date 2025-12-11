@@ -4,18 +4,21 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	repo "github.com/rubenalves-dev/raiiaa-one-service/internal/adapters/postgres/sqlc"
 	"github.com/rubenalves-dev/raiiaa-one-service/internal/common/validators"
 )
 
 var (
-	ErrEmailInUser  = errors.New("email already in use")
-	ErrUserNotFound = errors.New("user not found")
+	ErrEmailAlreadyInUse = errors.New("email already in use")
+	ErrUserNotFound      = errors.New("user not found")
 )
 
 type Service interface {
-	CreateUser(ctx context.Context, args repo.CreateUserParams) (*repo.User, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (repo.User, error)
+	CreateUser(ctx context.Context, args repo.CreateUserParams) (repo.User, error)
+	GetUserByEmail(ctx context.Context, email string) (repo.User, error)
 }
 
 type svc struct {
@@ -26,35 +29,50 @@ func NewService(repo repo.Querier) Service {
 	return &svc{repo: repo}
 }
 
-func (s *svc) CreateUser(ctx context.Context, args repo.CreateUserParams) (*repo.User, error) {
-	_, err := validators.Email(args.Email)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = s.repo.GetUserByEmail(ctx, args.Email)
+func (s *svc) CreateUser(ctx context.Context, args repo.CreateUserParams) (repo.User, error) {
+	_, err := s.GetUserByEmail(ctx, args.Email)
 	if err == nil {
-		return nil, ErrEmailInUser
+		return repo.User{}, ErrEmailAlreadyInUse
 	}
-	if !errors.Is(err, pgx.ErrNoRows) {
-		return nil, err
+	if !errors.Is(err, pgx.ErrNoRows) && !errors.Is(err, ErrUserNotFound) {
+		return repo.User{}, err
 	}
 
 	_, err = UserFullname(args.FullName.String)
 	if err != nil {
-		return nil, err
+		return repo.User{}, err
 	}
 
 	password, err := Password(args.PasswordHash)
 	if err != nil {
-		return nil, err
+		return repo.User{}, err
 	}
 	args.PasswordHash = string(password)
 
 	user, err := s.repo.CreateUser(ctx, args)
 	if err != nil {
-		return nil, err
+		return repo.User{}, err
 	}
 
-	return &user, nil
+	return user, nil
+}
+
+func (s *svc) GetUserByID(ctx context.Context, id uuid.UUID) (repo.User, error) {
+	user, err := s.repo.GetUserByID(ctx, id)
+	if err != nil {
+		return repo.User{}, ErrUserNotFound
+	}
+	return user, nil
+}
+
+func (s *svc) GetUserByEmail(ctx context.Context, email string) (repo.User, error) {
+	_, err := validators.Email(email)
+	if err != nil {
+		return repo.User{}, validators.ErrInvalidEmail
+	}
+	user, err := s.repo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return repo.User{}, ErrUserNotFound
+	}
+	return user, nil
 }

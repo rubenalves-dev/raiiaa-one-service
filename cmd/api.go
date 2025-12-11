@@ -8,7 +8,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5"
-	repo "github.com/rubenalves-dev/raiiaa-one-service/internal/adapters/postgres/sqlc"
 	"github.com/rubenalves-dev/raiiaa-one-service/internal/resources/users"
 )
 
@@ -35,18 +34,12 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Recoverer)                 // recover from crashes
 	r.Use(middleware.Timeout(60 * time.Second)) // stops process on request timeout
 
+	// DEFINE ROUTES
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("The server is healthy"))
 	})
 
-	// productsService := products.NewService(repo.New(app.db))
-	// productsHandlers := products.NewHandler(productsService)
-	// r.Get("/products", productsHandlers.ListProducts)
-	// r.Get("/products/{id}", productsHandlers.FindProductByID)
-
-	usersService := users.NewService(repo.New(app.db))
-	usersHandlers := users.NewHandler(usersService)
-	r.Post("/users", usersHandlers.CreateUser)
+	users.InitRoutes(r, app.db)
 
 	return r
 }
