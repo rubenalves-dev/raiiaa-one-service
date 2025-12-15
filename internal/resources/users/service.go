@@ -21,15 +21,15 @@ type Service interface {
 	GetUserByEmail(ctx context.Context, email string) (repo.User, error)
 }
 
-type svc struct {
+type service struct {
 	repo repo.Querier
 }
 
 func NewService(repo repo.Querier) Service {
-	return &svc{repo: repo}
+	return &service{repo: repo}
 }
 
-func (s *svc) CreateUser(ctx context.Context, args repo.CreateUserParams) (repo.User, error) {
+func (s *service) CreateUser(ctx context.Context, args repo.CreateUserParams) (repo.User, error) {
 	_, err := s.GetUserByEmail(ctx, args.Email)
 	if err == nil {
 		return repo.User{}, ErrEmailAlreadyInUse
@@ -57,7 +57,7 @@ func (s *svc) CreateUser(ctx context.Context, args repo.CreateUserParams) (repo.
 	return user, nil
 }
 
-func (s *svc) GetUserByID(ctx context.Context, id uuid.UUID) (repo.User, error) {
+func (s *service) GetUserByID(ctx context.Context, id uuid.UUID) (repo.User, error) {
 	user, err := s.repo.GetUserByID(ctx, id)
 	if err != nil {
 		return repo.User{}, ErrUserNotFound
@@ -65,7 +65,7 @@ func (s *svc) GetUserByID(ctx context.Context, id uuid.UUID) (repo.User, error) 
 	return user, nil
 }
 
-func (s *svc) GetUserByEmail(ctx context.Context, email string) (repo.User, error) {
+func (s *service) GetUserByEmail(ctx context.Context, email string) (repo.User, error) {
 	_, err := validators.Email(email)
 	if err != nil {
 		return repo.User{}, validators.ErrInvalidEmail

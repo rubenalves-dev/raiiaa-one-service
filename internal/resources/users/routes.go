@@ -11,7 +11,9 @@ func InitRoutes(r *chi.Mux, db *pgx.Conn) {
 	service := NewService(repo)
 	handler := NewHandler(service)
 
-	r.Post("/users", handler.CreateUser)
-	r.Get("/users/{id}", handler.GetUserByID)
-	r.Post("/users/email", handler.GetUserByEmail)
+	r.Route("/users", func(r chi.Router) {
+		r.Post("/", handler.CreateUser)
+		r.Get("/{id}", handler.GetUserByID)
+		r.Post("/email", handler.GetUserByEmail)
+	})
 }

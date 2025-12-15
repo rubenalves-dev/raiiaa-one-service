@@ -13,9 +13,11 @@ import (
 type Querier interface {
 	CreateClient(ctx context.Context, arg CreateClientParams) (Client, error)
 	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
+	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
 	CreateTask(ctx context.Context, arg CreateTaskParams) (Task, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	GetClient(ctx context.Context, arg GetClientParams) (Client, error)
+	GetRefreshToken(ctx context.Context, token string) (RefreshToken, error)
 	GetUnbillableTimeEntries(ctx context.Context, userID uuid.UUID) ([]GetUnbillableTimeEntriesRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
@@ -25,6 +27,7 @@ type Querier interface {
 	ListTasksByProjectID(ctx context.Context, arg ListTasksByProjectIDParams) ([]Task, error)
 	ListTasksByUserID(ctx context.Context, userID uuid.UUID) ([]Task, error)
 	ListTimeEntriesByRange(ctx context.Context, arg ListTimeEntriesByRangeParams) ([]ListTimeEntriesByRangeRow, error)
+	RevokeRefreshToken(ctx context.Context, token string) error
 	StartTimer(ctx context.Context, arg StartTimerParams) (TimeEntry, error)
 	StopTimer(ctx context.Context, id int32) (TimeEntry, error)
 	StopTimerForUser(ctx context.Context, userID uuid.UUID) (TimeEntry, error)

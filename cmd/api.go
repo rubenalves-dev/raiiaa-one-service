@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5"
+	"github.com/rubenalves-dev/raiiaa-one-service/internal/resources/auth"
 	"github.com/rubenalves-dev/raiiaa-one-service/internal/resources/users"
 )
 
@@ -40,6 +41,7 @@ func (app *application) mount() http.Handler {
 	})
 
 	users.InitRoutes(r, app.db)
+	auth.InitRoutes(r, app.db)
 
 	return r
 }
